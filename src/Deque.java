@@ -21,7 +21,7 @@ public class Deque<Item> implements Iterable<Item> {
     }
 
     //Add an item to the front of the queue
-    public void addFirst(Item item) throws IllegalArgumentException {
+    public void addFirst(Item item) {
         if (item == null)
             throw new IllegalArgumentException("Cannot add an empty item.");
 
@@ -43,7 +43,7 @@ public class Deque<Item> implements Iterable<Item> {
     }
 
     //Add item to the end of the Deque
-    public void addLast(Item item) throws IllegalArgumentException {
+    public void addLast(Item item) {
         if (item == null)
             throw new IllegalArgumentException("Cannot add an an empty item.");
 
@@ -65,7 +65,7 @@ public class Deque<Item> implements Iterable<Item> {
     }
 
     //Delete items starting from the front of the Deque
-    public Item removeFirst() throws NoSuchElementException {
+    public Item removeFirst() {
         if (isEmpty())
             throw new NoSuchElementException("Cannot remove element from an empty Deque");
 
@@ -83,7 +83,7 @@ public class Deque<Item> implements Iterable<Item> {
     }
 
     //Delete and return item at the end of the Deque
-    public Item removeLast() throws NoSuchElementException {
+    public Item removeLast() {
         if (isEmpty())
             throw new NoSuchElementException("Cannot remove element from an empty Deque. ");
 
@@ -92,7 +92,7 @@ public class Deque<Item> implements Iterable<Item> {
             first = null;
             last = null;
         } else {
-            last = last.next;
+            last = last.prev;
             last.next = null;
         }
         size--;
@@ -100,7 +100,7 @@ public class Deque<Item> implements Iterable<Item> {
     }
 
     @Override
-    public Iterator<Item> iterator() throws NoSuchElementException {
+    public Iterator<Item> iterator() {
 
         return new DequeIterator();
     }
@@ -132,7 +132,7 @@ public class Deque<Item> implements Iterable<Item> {
         }
 
         @Override
-        public Item next() throws NoSuchElementException {
+        public Item next() {
             if (!hasNext())
                 throw new NoSuchElementException("No more items in Deque");
             Item item = current.item;
@@ -141,7 +141,7 @@ public class Deque<Item> implements Iterable<Item> {
             return item;
         }
 
-        public void remove() throws UnsupportedOperationException {
+        public void remove() {
             throw new UnsupportedOperationException("Function remove() is not supported");
         }
     }
