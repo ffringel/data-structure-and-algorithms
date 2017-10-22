@@ -69,7 +69,7 @@ public class Percolation {
 
     public int numberOfOpenSites() {
 
-        return count;
+        return quickUnion.count();
     }
 
     public boolean percolates() {

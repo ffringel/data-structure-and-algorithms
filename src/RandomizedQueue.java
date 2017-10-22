@@ -8,8 +8,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
     private int size;
 
     public RandomizedQueue() {
-        if(items instanceof Object[])
-            items = (Item[]) new Object[1];
+        items = (Item[]) new Object[1];
     }
 
     public boolean isEmpty() {
@@ -20,21 +19,26 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         return size;
     }
 
-    public void enqueue(Item item) throws IllegalArgumentException {
+    public void enqueue(Item item) {
         if (item == null)
             throw new IllegalArgumentException("Cannot add null Item");
 
-        if (items.length == size) {
-            resize(items.length * 2);
-            items[size] = item;
-            size++;
-        } else {
-            items[size] = item;
-            size++;
-        }
+        if (size == items.length)
+            resize(2 * items.length);
+        items[size++] = item;
+
+//        if (items.length == 0) {
+//            resize(1);
+//            items[size] = item;
+//            size++;
+//        } else if (items.length <= size) {
+//            resize(items.length * 2);
+//            items[size] = item;
+//            size++;
+//        }
     }
 
-    public Item dequeue() throws NoSuchElementException {
+    public Item dequeue() {
         if (isEmpty())
             throw new NoSuchElementException("Cannot dequeue from an empty RandomizedQueue");
         int randomIndex = StdRandom.uniform(size);
@@ -52,7 +56,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         return returnItem;
     }
 
-    public Item sample() throws NoSuchElementException {
+    public Item sample() {
         if (isEmpty())
             throw new NoSuchElementException("Cannot sample an empty RandomizedQueue");
 
@@ -62,8 +66,9 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
     private void resize(int capacity) {
         Item[] copy = (Item[]) new Object[capacity];
-        for (int i = 0; i < size; i++)
+        for(int i = 0; i < size; i++) {
             copy[i] = items[i];
+        }
         items = copy;
     }
     
@@ -74,7 +79,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
     private class RandomQueueIterator implements Iterator<Item> {
         private int i = 0;
-        private int[] indices;
+        final private int[] indices;
 
         public RandomQueueIterator() {
             indices = new int[size];
@@ -96,7 +101,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
             return items[indices[i++]];
         }
 
-        public void remove() throws UnsupportedOperationException {
+        public void remove() {
             throw new UnsupportedOperationException("remove() operation is not supported");
         }
     }
