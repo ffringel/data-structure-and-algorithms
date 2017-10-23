@@ -1,78 +1,94 @@
+import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
 public class Percolation {
-    private boolean[][] siteStatus;
-    private int count;
+    private int[][] openSites;
     private WeightedQuickUnionUF quickUnion;
-    private int n;
+    private int n, bottom, numberOfOpenSites;
+    private int top = 0;
 
     public Percolation(int n) {
-        this.n = n;
-
-        siteStatus = new boolean[n][n];
-        quickUnion = new WeightedQuickUnionUF((n  * n) + 2);
-        count = 0;
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                //initialize site status as blocked
-                siteStatus[i][j] = true;
-
-                //initialise site ids
-                count++;
-                if (i == 0) {
-                    quickUnion.union(count, 0);
-                } else if (i == n - 1) {
-                    quickUnion.union(count, (n * n) + 1);
-                }
-            }
+        if (n <= 0) {
+            throw new IllegalArgumentException("the size of the grid should be positive integer");
         }
+        quickUnion = new WeightedQuickUnionUF(n * n + 2);
+        openSites = new int[n][n];
+        this.n = n;
+        bottom = n * n + 1;
     }
 
     public void open(int row, int col) {
-        int x, y;
-        x = row - 1;
-        y = col - 1;
-        siteStatus[x][y] = false;
-        for (int a = x - 1; a <= x + 1; a += 2) {
-            if (a >= 0 && a < n && y < n) {
-                if (isOpen(a + 1, y + 1)) {
-                    quickUnion.union((a * n) + (y + 1), (x * n) + col);
-                }
-            }
+        checkRange(row, col);
+        int index = getIndex(row, col);
+        openSites[row - 1][col - 1] = 1;
+        numberOfOpenSites++;
+
+        if (row == 1) {
+            quickUnion.union(index, top);
         }
 
-        for (int b = y - 1; b <= y + 1; b += 2) {
-            if (x < n && b >= 0 && b < n) {
-                if (isOpen(x + 1, b + 1)) {
-                    quickUnion.union((x * n) + (b + 1), (x * n) + col);
-                }
-            }
+        if (row == n) {
+            quickUnion.union(index, bottom);
         }
+
+        if (col > 1 && isOpen(row, col - 1)) {
+            quickUnion.union(index, getIndex(row, col - 1));
+        }
+
+        if (col < n && isOpen(row,col + 1)) {
+            quickUnion.union(index, getIndex(row, col + 1));
+        }
+
+        if (row > 1 && isOpen(row - 1, col)) {
+            quickUnion.union(index, getIndex(row - 1, col));
+        }
+
+        if (row < n && isOpen(row + 1, col)) {
+            quickUnion.union(index, getIndex(row + 1, col));
+        }
+    }
+
+    private int getIndex(int row, int col) {
+        return col + (row - 1) * n;
     }
 
     public boolean isOpen(int row, int col) {
-        if (row > 0 && row <= n && col > 0 && col <= n) {
-            return !siteStatus[row - 1][col - 1];
-        } else {
-            throw new IllegalArgumentException("Values are out of range");
-        }
+        checkRange(row, col);
+        return openSites[row - 1][col - 1] == 1;
     }
 
     public boolean isFull(int row, int col) {
-        if (row > 0 && row <= n && col > 0 && col <= n) {
-            return quickUnion.connected(((row - 1) * n) + col, 0) &&
-                    !siteStatus[row - 1][col - 1];
-        } else {
-            throw new IllegalArgumentException("Values are out of range");
-        }
+        checkRange(row, col);
+        return quickUnion.connected(top, getIndex(row , col));
     }
 
     public int numberOfOpenSites() {
-
-        return quickUnion.count();
+        return numberOfOpenSites;
     }
 
     public boolean percolates() {
-        return quickUnion.connected(0, (n * n) + 1);
+        return quickUnion.connected(top, bottom);
+    }
+
+    private void checkRange(int row, int col) {
+        if (!(row >= 1 && row <= n && col >= 1 && col <= n)) {
+            throw new IllegalArgumentException("The specified site is not present in the range");
+        }
+    }
+
+    public static void main(String[] args) {
+        In in = new In(args[0]);
+        int n = in.readInt();
+
+        Percolation percolation = new Percolation(n);
+        System.out.println(percolation.isFull(1, 1));
+        while (!in.isEmpty()) {
+            int row = in.readInt();
+            int col = in.readInt();
+            percolation.open(row, col);
+        }
+
+        System.out.println(percolation.percolates());
+        System.out.println(percolation.numberOfOpenSites());
     }
 }
