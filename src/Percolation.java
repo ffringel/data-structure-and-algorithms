@@ -1,65 +1,81 @@
-import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 
 public class Percolation {
-    private int[][] openSites;
+
     private WeightedQuickUnionUF quickUnion;
-    private int n, bottom, numberOfOpenSites;
-    private int top = 0;
+    private WeightedQuickUnionUF backWashChecked;
+    private int gridSize;
+    private final int startPoint;
+    private final int endPoint;
+    private boolean[][] openSites;
+    private int numberOfOpenSites;
 
     public Percolation(int n) {
         if (n <= 0) {
             throw new IllegalArgumentException("the size of the grid should be positive integer");
         }
         quickUnion = new WeightedQuickUnionUF(n * n + 2);
-        openSites = new int[n][n];
-        this.n = n;
-        bottom = n * n + 1;
+        backWashChecked = new WeightedQuickUnionUF(n * n + 1);
+
+        openSites = new boolean[n][n];
+        numberOfOpenSites = 0;
+        startPoint = 0;
+        endPoint = n * n + 1;
+        gridSize = n;
     }
 
     public void open(int row, int col) {
-        checkRange(row, col);
-        int index = getIndex(row, col);
-        openSites[row - 1][col - 1] = 1;
+        if (row < 1 || row > gridSize || col < 1 || col > gridSize)
+            throw new IndexOutOfBoundsException("The specified site is not present in the range");
+
+        if (isOpen(row, col))
+            return;
+        openSites[row - 1][col - 1] = true;
         numberOfOpenSites++;
 
         if (row == 1) {
-            quickUnion.union(index, top);
+            quickUnion.union(getFlattenId(row, col), startPoint);
+            backWashChecked.union(getFlattenId(row, col), startPoint);
         }
 
-        if (row == n) {
-            quickUnion.union(index, bottom);
-        }
-
-        if (col > 1 && isOpen(row, col - 1)) {
-            quickUnion.union(index, getIndex(row, col - 1));
-        }
-
-        if (col < n && isOpen(row,col + 1)) {
-            quickUnion.union(index, getIndex(row, col + 1));
+        if (row == gridSize) {
+            quickUnion.union(getFlattenId(row, col), endPoint);
         }
 
         if (row > 1 && isOpen(row - 1, col)) {
-            quickUnion.union(index, getIndex(row - 1, col));
+            quickUnion.union(getFlattenId(row - 1, col), getFlattenId(row, col));
+            backWashChecked.union(getFlattenId(row - 1, col), getFlattenId(row, col));
         }
 
-        if (row < n && isOpen(row + 1, col)) {
-            quickUnion.union(index, getIndex(row + 1, col));
+        if (row < gridSize && isOpen(row + 1, col)) {
+            quickUnion.union(getFlattenId(row + 1, col), getFlattenId(row, col));
+            backWashChecked.union(getFlattenId(row + 1, col), getFlattenId(row, col));
         }
-    }
 
-    private int getIndex(int row, int col) {
-        return col + (row - 1) * n;
+        if (col > 1 && isOpen(row,col - 1)) {
+            quickUnion.union(getFlattenId(row, col - 1), getFlattenId(row, col));
+            backWashChecked.union(getFlattenId(row, col - 1), getFlattenId(row, col));
+        }
+
+        if (col < gridSize && isOpen(row, col + 1)) {
+            quickUnion.union(getFlattenId(row, col + 1), getFlattenId(row, col));
+            backWashChecked.union(getFlattenId(row, col + 1), getFlattenId(row, col));
+        }
     }
 
     public boolean isOpen(int row, int col) {
-        checkRange(row, col);
-        return openSites[row - 1][col - 1] == 1;
+        if (row < 1 || row > gridSize || col < 1 || col > gridSize)
+            throw new IllegalArgumentException("The specified site is not present in the range");
+
+        return openSites[row - 1][col - 1];
     }
 
     public boolean isFull(int row, int col) {
-        checkRange(row, col);
-        return quickUnion.connected(top, getIndex(row , col));
+        if (row < 1 || row > gridSize || col < 1 || col > gridSize)
+            throw new IllegalArgumentException("The specified site is not present in the range");
+
+        return backWashChecked.connected(getFlattenId(row, col), startPoint);
     }
 
     public int numberOfOpenSites() {
@@ -67,24 +83,25 @@ public class Percolation {
     }
 
     public boolean percolates() {
-        return quickUnion.connected(top, bottom);
+        return numberOfOpenSites() > 0 && quickUnion.connected(startPoint, endPoint);
     }
 
-    private void checkRange(int row, int col) {
-        if (!(row >= 1 && row <= n && col >= 1 && col <= n)) {
-            throw new IllegalArgumentException("The specified site is not present in the range");
-        }
+    private int getFlattenId(int row, int col) {
+        if (row < 1 || row > gridSize || col < 1 || col > gridSize)
+            throw new IndexOutOfBoundsException("The specified site is not present in the range");
+
+        return (row - 1) * gridSize + col;
     }
 
     public static void main(String[] args) {
-        In in = new In(args[0]);
-        int n = in.readInt();
+        int gridSize = StdIn.readInt();
+        int row, col, temp;
 
-        Percolation percolation = new Percolation(n);
+        Percolation percolation = new Percolation(gridSize);
         System.out.println(percolation.isFull(1, 1));
-        while (!in.isEmpty()) {
-            int row = in.readInt();
-            int col = in.readInt();
+        while (!StdIn.isEmpty()) {
+            row = StdIn.readInt();
+            col = StdIn.readInt();
             percolation.open(row, col);
         }
 
