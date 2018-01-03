@@ -1,4 +1,8 @@
-import edu.princeton.cs.algs4.*;
+import edu.princeton.cs.algs4.Digraph;
+import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.StdIn;
+import edu.princeton.cs.algs4.StdOut;
+import edu.princeton.cs.algs4.BreadthFirstDirectedPaths;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,9 +14,9 @@ public class SAP {
     private Digraph graph;
     private Map<String, SAPProcessor> cache;
 
-    public SAP(Digraph graph) {
+    public SAP(Digraph g) {
         cache = new HashMap<>();
-        graph = new Digraph(graph);
+        graph = new Digraph(g);
     }
 
     public int length(int v, int w) {
